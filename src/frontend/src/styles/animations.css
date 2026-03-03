@@ -31,25 +31,37 @@
 }
 
 /* -----------------------------------------------------------------------------
-   Glow Pulse Animation
-   Slow, ambient pulsing for background glows on specific pages (login, etc).
+   Auth Transition Animations
+   Entrance (mount) and exit (login success) for auth pages.
    ----------------------------------------------------------------------------- */
-@keyframes glow-pulse {
-	0%,
-	100% {
-		opacity: 0.4;
+@keyframes auth-enter {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.97);
 	}
-	50% {
-		opacity: 0.7;
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
 	}
 }
 
-.animate-glow-pulse {
-	animation: glow-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes auth-exit {
+	from {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.97);
+	}
 }
 
-.animation-delay-2000 {
-	animation-delay: 2s;
+.animate-auth-enter {
+	animation: auth-enter 400ms ease-out;
+}
+
+.animate-auth-exit {
+	animation: auth-exit 400ms ease-out forwards;
 }
 
 /* -----------------------------------------------------------------------------
@@ -94,7 +106,8 @@
    ----------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
 	.animate-shake,
-	.animate-glow-pulse,
+	.animate-auth-enter,
+	.animate-auth-exit,
 	.animate-caret-blink,
 	.status-indicator-ping,
 	.status-icon-ping {

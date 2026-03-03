@@ -31,6 +31,7 @@
 
 	let challengeToken = $state('');
 	let requiresTwoFactor = $state(false);
+	let loginSuccess = $state(false);
 
 	let isApiOnline = $derived(!healthState.checked || healthState.online);
 
@@ -98,7 +99,12 @@
 	});
 
 	async function completeLogin() {
+		loginSuccess = true;
 		toast.success(m.auth_login_success());
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (!prefersReducedMotion) {
+			await new Promise((r) => setTimeout(r, 400));
+		}
 		await invalidateAll();
 		await goto(resolve('/'));
 	}
@@ -109,7 +115,10 @@
 	}
 </script>
 
-<AuthShell cardClass={cn(shake.active && 'animate-shake border-destructive')}>
+<AuthShell
+	cardClass={cn(shake.active && 'animate-shake border-destructive')}
+	success={loginSuccess}
+>
 	{#snippet extras()}
 		<div
 			class="group absolute start-[max(1rem,env(safe-area-inset-left,0px))] bottom-[max(1rem,env(safe-area-inset-bottom,0px))] flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground/60 transition-all hover:bg-muted/50 hover:text-muted-foreground"
@@ -159,7 +168,7 @@
 									<Form.Label>{m.auth_login_password()}</Form.Label>
 									<a
 										href={resolve('/forgot-password')}
-										class="inline-flex min-h-10 items-center text-sm font-medium text-primary hover:underline"
+										class="inline-flex min-h-11 items-center text-sm font-medium text-primary hover:underline"
 									>
 										{m.auth_login_forgotPassword()}
 									</a>
@@ -207,7 +216,7 @@
 				<span class="text-muted-foreground">{m.auth_login_noAccount()}</span>
 				<a
 					href={resolve('/register')}
-					class="ms-1 inline-flex min-h-10 items-center font-medium text-primary hover:underline"
+					class="ms-1 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
 				>
 					{m.auth_login_signUp()}
 				</a>
