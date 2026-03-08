@@ -30,14 +30,14 @@ Quick-reference for "when you change X, also update Y" and "where does X live?"
 | **`Result.cs`** (Shared - change pattern) | Every service + every controller that matches on `Result` |
 | **Application interface** (change signature) | Infrastructure service implementation, controller calling the service |
 | **Application DTO** (add/rename/remove field) | Infrastructure service, WebApi mapper, WebApi request/response DTO, frontend types |
-| **Infrastructure Options class** | `appsettings.json`, `appsettings.Development.json` (excluded from production publish - see `StripDevConfig`), `deploy/envs/production-example/api.env`, DI registration |
+| **Infrastructure Options class** | `appsettings.json`, `appsettings.Development.json` (excluded from production publish - see `StripDevConfig`), DI registration |
 | **WebApi controller** (change route/method) | Frontend API calls, `v1.d.ts` regeneration |
 | **WebApi request DTO** (add/rename/remove property) | Validator, mapper, frontend types, frontend form |
 | **WebApi response DTO** (add/rename/remove property) | Mapper, frontend types, frontend component displaying data, `Api.Tests/Contracts/ResponseContracts.cs` |
 | **`Program.cs`** (change middleware order) | Test full request pipeline - order matters for auth, CORS, rate limiting; update `CustomWebApplicationFactory` if new services need mocking |
 | **`BaseEntity.cs`** | `BaseEntityConfiguration`, `AuditingInterceptor`, all entities |
-| **`FileStorageOptions`** (change S3/MinIO config) | `appsettings.json`, `deploy/envs/production-example/compose.env`, `deploy/docker-compose.yml`, `appsettings.Testing.json` |
-| **`EmailOptions`** (change config shape) | `appsettings.json`, `appsettings.Development.json`, `appsettings.Testing.json`, `deploy/envs/production-example/api.env`, `ServiceCollectionExtensions` (email DI), `EmailOptionsValidationTests` |
+| **`FileStorageOptions`** (change S3/MinIO config) | `appsettings.json`, `MyProject.AppHost/Program.cs` (`.WithEnvironment()`), `appsettings.Testing.json` |
+| **`EmailOptions`** (change config shape) | `appsettings.json`, `appsettings.Development.json`, `appsettings.Testing.json`, `ServiceCollectionExtensions` (email DI), `EmailOptionsValidationTests` |
 | **`IEmailService`** (change sending contract) | `NoOpEmailService`, `SmtpEmailService`, `CustomWebApplicationFactory` |
 | **`IEmailTemplateRenderer`** (change rendering contract) | `FluidEmailTemplateRenderer`, `TemplatedEmailSender`, `FluidEmailTemplateRendererTests` |
 | **`ITemplatedEmailSender`** (change send-safe contract) | `TemplatedEmailSender`, all services calling `SendSafeAsync()` (`AuthenticationService`, `AdminService`), `TemplatedEmailSenderTests` |
@@ -54,7 +54,7 @@ Quick-reference for "when you change X, also update Y" and "where does X live?"
 | **`AuditEvent` entity** (change fields) | `AuditEventConfiguration`, `AuditService`, Application DTOs (`AuditEventOutput`), WebApi DTOs, `AuditMapper`, frontend types |
 | **`HybridCache`** (caching abstraction - change caching usage) | `NoOpHybridCache`, `UserCacheInvalidationInterceptor`, all services using `HybridCache` (`AdminService`, `AuthenticationService`, `UserService`, `RoleManagementService`), `CustomWebApplicationFactory` mock |
 | **`CacheKeys.cs`** (Application - rename/remove key) | All services referencing the changed key, `UserCacheInvalidationInterceptor` |
-| **`CachingOptions`** (Infrastructure - change config shape) | `appsettings.json`, `appsettings.Development.json`, `deploy/envs/production-example/api.env` |
+| **`CachingOptions`** (Infrastructure - change config shape) | `appsettings.json`, `appsettings.Development.json` |
 | **`ICookieService`** (Application - change cookie contract) | `CookieService`, `AuthenticationService`, `UserService` |
 | **`CookieNames`** (Application - rename/remove cookie name) | `AuthController`, `AuthenticationService`, `UserService` |
 | **`IUserService`** (Application/Identity - change user service contract) | `UserService`, `UsersController`, `CustomWebApplicationFactory` mock |
@@ -70,13 +70,13 @@ Quick-reference for "when you change X, also update Y" and "where does X live?"
 | **`RateLimitPolicies.cs`** (add/rename constant) | `RateLimiterExtensions.cs` policy registration, `RateLimitingOptions.cs` config class, `appsettings.json` section, `[EnableRateLimiting]` attribute on controllers |
 | **`RateLimitingOptions.cs`** (add/rename option class) | `RateLimiterExtensions.cs`, `appsettings.json`, `appsettings.Development.json` |
 | **`RateLimiterExtensions.cs`** (add policy) | Requires matching constant in `RateLimitPolicies.cs` and config in `RateLimitingOptions.cs` |
-| **`HostingOptions.cs`** (change hosting config shape) | `HostingExtensions.cs`, `appsettings.json`, `appsettings.Development.json`, `deploy/docker-compose.yml` |
+| **`HostingOptions.cs`** (change hosting config shape) | `HostingExtensions.cs`, `appsettings.json`, `appsettings.Development.json` |
 | **`Dockerfile`** (backend - change build/publish steps) | `.dockerignore`, verify published files don't include dev/test config |
-| **`Dockerfile`** (frontend - change build steps) | `.dockerignore`, `.npmrc` (copied into image for install-affecting settings), `docker.yml` build args, `deploy/build.sh`/`deploy/build.ps1` build args. New `PUBLIC_*` SvelteKit env vars need `ARG`+`ENV` in Dockerfile (before `pnpm run build`), `--build-arg` in deploy scripts and `docker.yml` |
+| **`Dockerfile`** (frontend - change build steps) | `.dockerignore`, `.npmrc` (copied into image for install-affecting settings), `docker.yml` build args. New `PUBLIC_*` SvelteKit env vars need `ARG`+`ENV` in Dockerfile (before `pnpm run build`), `--build-arg` in `docker.yml`. For runtime env vars, prefer `$env/dynamic/private` with SSR layout data |
 | **`MyProject.WebApi.csproj`** (add appsettings file) | If non-production: add `CopyToPublishDirectory="Never"` and matching `rm -f` in `Dockerfile` |
-| **`HealthCheckExtensions.cs`** (change endpoints/checks) | `deploy/docker-compose.yml` healthcheck URLs, frontend health proxy `+server.ts` |
-| **New infrastructure dependency** (DB, cache, storage, etc.) | `MyProject.AppHost/Program.cs` (add resource + `.WithReference()`/`.WithEnvironment()`), `deploy/docker-compose.yml` (add service), `deploy/envs/` (add env vars) |
-| **Connection string config** (change format/name) | Verify `MyProject.AppHost/Program.cs` environment variable mapping still works, `deploy/envs/` env files |
+| **`HealthCheckExtensions.cs`** (change endpoints/checks) | Frontend health proxy `+server.ts`, Dockerfile healthcheck command |
+| **New infrastructure dependency** (DB, cache, storage, etc.) | `MyProject.AppHost/Program.cs` (add resource + `.WithReference()`/`.WithEnvironment()`) |
+| **Connection string config** (change format/name) | Verify `MyProject.AppHost/Program.cs` environment variable mapping still works |
 | **`MyProject.ServiceDefaults/Extensions.cs`** | All projects referencing ServiceDefaults, `Program.cs` `AddServiceDefaults()` call |
 | **`MyProject.AppHost/Program.cs`** | Verify resource names match `ConnectionStrings:*` and `WithEnvironment` keys match `appsettings.json` option paths |
 | **`ProblemDetailsAuthorizationHandler`** | `ProblemDetails` shape, `ErrorMessages.Auth` constants, `Program.cs` registration |
@@ -123,15 +123,13 @@ Quick-reference for "when you change X, also update Y" and "where does X live?"
 | **Backend endpoint route** | Frontend API calls + regenerate types |
 | **Backend response shape** | Regenerate types → update frontend components |
 | **Backend auth/cookie behavior** | Frontend `$lib/auth/middleware.ts` (refresh logic), `$lib/auth/auth.ts` |
-| **`appsettings.Development.json`** (add dev config override) | Verify production equivalent in `deploy/envs/production-example/api.env` or `compose.env` |
-| **`deploy/envs/production-example/compose.env`** | `deploy/docker-compose.production.yml` if variable needs Docker wiring |
+| **`appsettings.Development.json`** (add dev config override) | Keep standalone defaults (ConnectionStrings, FileStorage, JWT key) in sync with `MyProject.AppHost/appsettings.json` parameters |
 | **`.env.example`** (frontend) | `src/frontend/.env.test` if new `PUBLIC_*` var added |
 | **`.env.test`** (frontend) | `ci.yml` loads it via `cp .env.test .env`; keep in sync with `.env.example` vars |
-| **`deploy/docker-compose.yml`** | `deploy/envs/production-example/compose.env` if new interpolation variable introduced |
-| **`deploy/docker-compose.production.yml`** | `deploy/envs/production-example/` if new variable introduced |
+| **`MyProject.AppHost/Program.cs`** (add env var or parameter) | Verify `appsettings.Development.json` standalone defaults match |
 | **CORS config** (`CorsExtensions.cs`) | Frontend dev server origin, `ALLOWED_ORIGINS` env var |
 | **Rate limiting config** | Frontend may need retry/backoff logic |
-| **`appsettings.json`** structure | Options class, `deploy/envs/production-example/api.env`, `deploy/docker-compose.yml` |
+| **`appsettings.json`** structure | Options class, `MyProject.AppHost/Program.cs` |
 | **CI workflows** (`.github/workflows/`) | Verify `dorny/paths-filter` patterns match project structure |
 
 ---
@@ -271,14 +269,8 @@ src/backend/tests/
 | `src/frontend/src/lib/components/layout/ContentHeader.svelte` | Desktop breadcrumb header + sidebar toggle (keep route labels in sync with AppSidebar) |
 | `src/frontend/src/lib/components/layout/CommandPalette.svelte` | Command palette entries (keep in sync with AppSidebar) |
 | `src/frontend/src/lib/api/v1.d.ts` | Generated types (never hand-edit) |
-| `deploy/envs/production-example/` | Production env template - `cp -r` to `deploy/envs/production/` |
-| `deploy/docker-compose.yml` | Base service definitions (production only) |
-| `deploy/docker-compose.production.yml` | Production overlay |
-| `deploy/build.sh` / `deploy/build.ps1` | Build and push Docker images |
-| `deploy/up.sh` / `deploy/up.ps1` | Production environment launcher |
-| `deploy/config.json` | Deploy configuration (registries, versioning) |
 | `src/frontend/.env.test` | CI + test environment defaults (loaded by `ci.yml`) |
 | `src/backend/MyProject.WebApi/appsettings.Testing.json` | Test environment config (disables Hangfire, caching, CORS) |
 | `src/backend/tests/MyProject.Api.Tests/Fixtures/CustomWebApplicationFactory.cs` | Test host configuration for API tests |
 | `src/backend/MyProject.ServiceDefaults/Extensions.cs` | Aspire shared: OTEL, service discovery, HTTP resilience defaults |
-| `src/backend/MyProject.AppHost/Program.cs` | Aspire orchestrator: local dev infrastructure (PostgreSQL, MinIO, API, Frontend) |
+| `src/backend/MyProject.AppHost/Program.cs` | Aspire orchestrator: local dev (PostgreSQL, MinIO, MailPit, API, Frontend) |

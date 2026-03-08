@@ -62,23 +62,6 @@ Migrations auto-apply on startup in Development.
 
 ## Production Deployment
 
-Docker Compose is used for production only. Aspire is not involved.
+Production deployment is up to you. The project provides production-ready Dockerfiles (`src/backend/MyProject.WebApi/Dockerfile` and `src/frontend/Dockerfile`) but does not prescribe an orchestrator, build pipeline, or registry. Use whatever fits your infrastructure.
 
-```bash
-./deploy/up.sh production up -d
-```
-
-See [Before You Ship](before-you-ship.md) for the full production checklist.
-
----
-
-## Build & Push
-
-Build and push Docker images with semantic versioning:
-
-```bash
-./deploy/build.sh backend --minor    # Build, bump minor version, push to registry
-./deploy/build.sh frontend --patch   # Same for frontend
-```
-
-Supports Docker Hub, GitHub Container Registry, Azure ACR, AWS ECR, DigitalOcean, and custom registries.
+See [Before You Ship](before-you-ship.md) for the configuration checklist.

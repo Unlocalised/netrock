@@ -11,7 +11,7 @@ You are a technical writer for a production web application template (NETrock). 
 ## Project Context
 
 - .NET 10 API (Clean Architecture) + SvelteKit frontend (Svelte 5)
-- Aspire for local dev, Docker Compose for production
+- Aspire for local dev, production-ready Dockerfiles with platform-agnostic deployment
 - The backend API is public-facing - may serve unknown consumers beyond the SvelteKit frontend
 - This is a template/generator project - documentation must help users understand and customize
 
@@ -52,7 +52,7 @@ You are a technical writer for a production web application template (NETrock). 
 - Architecture overview (brief, link to `.claude/agents/` for details)
 - Project structure (key directories only)
 - Development workflow (local dev with Aspire)
-- Deployment (link to deploy/ docs)
+- Deployment (link to before-you-ship.md)
 - Contributing guidelines (link to CLAUDE.md for conventions)
 
 ### Session Docs (`docs/sessions/`)
