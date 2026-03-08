@@ -296,10 +296,10 @@ internal sealed class UserService(
             return Result.Failure(ErrorMessages.User.DeleteInvalidPassword);
         }
 
-        var lastAdminResult = await EnforceLastAdminProtectionForDeletionAsync(user, cancellationToken);
-        if (!lastAdminResult.IsSuccess)
+        var lastSuperuserResult = await EnforceLastSuperuserProtectionForDeletionAsync(user, cancellationToken);
+        if (!lastSuperuserResult.IsSuccess)
         {
-            return lastAdminResult;
+            return lastSuperuserResult;
         }
 
         await auditService.LogAsync(AuditActions.AccountDeletion, userId: userId.Value, ct: cancellationToken);
@@ -324,14 +324,14 @@ internal sealed class UserService(
     }
 
     /// <summary>
-    /// Prevents self-deletion if the user is the last holder of any administrative role.
+    /// Prevents self-deletion if the user is the last Superuser.
     /// </summary>
-    private async Task<Result> EnforceLastAdminProtectionForDeletionAsync(
+    private async Task<Result> EnforceLastSuperuserProtectionForDeletionAsync(
         ApplicationUser user, CancellationToken cancellationToken)
     {
         var userRoles = await userManager.GetRolesAsync(user);
 
-        foreach (var role in userRoles.Where(r => r is AppRoles.Admin or AppRoles.SuperAdmin))
+        foreach (var role in userRoles.Where(r => r is AppRoles.Superuser))
         {
             var roleEntity = await roleManager.FindByNameAsync(role);
             if (roleEntity is null) continue;
@@ -341,7 +341,7 @@ internal sealed class UserService(
 
             if (usersInRoleCount <= 1)
             {
-                return Result.Failure(ErrorMessages.User.LastAdminCannotDelete);
+                return Result.Failure(ErrorMessages.User.LastSuperuserCannotDelete);
             }
         }
 
@@ -390,11 +390,11 @@ internal sealed class UserService(
 
     /// <summary>
     /// Collects deduplicated permission values for the given roles in a single query.
-    /// SuperAdmin receives all permissions implicitly.
+    /// Superuser receives all permissions implicitly.
     /// </summary>
     private async Task<IReadOnlyList<string>> GetPermissionsForRolesAsync(IList<string> roleNames)
     {
-        if (roleNames.Contains(AppRoles.SuperAdmin))
+        if (roleNames.Contains(AppRoles.Superuser))
         {
             return AppPermissions.All;
         }

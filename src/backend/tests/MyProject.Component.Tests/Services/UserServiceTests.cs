@@ -242,24 +242,24 @@ public class UserServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteAccount_LastAdmin_ReturnsFailure()
+    public async Task DeleteAccount_LastSuperuser_ReturnsFailure()
     {
-        var user = new ApplicationUser { Id = _userId, UserName = "admin@example.com" };
+        var user = new ApplicationUser { Id = _userId, UserName = "superuser@example.com" };
         _userContext.UserId.Returns(_userId);
         _userManager.FindByIdAsync(_userId.ToString()).Returns(user);
         _userManager.CheckPasswordAsync(user, "correct").Returns(true);
-        _userManager.GetRolesAsync(user).Returns(new List<string> { AppRoles.Admin });
+        _userManager.GetRolesAsync(user).Returns(new List<string> { AppRoles.Superuser });
 
-        // Set up single admin in role
-        var adminRole = new ApplicationRole { Id = Guid.NewGuid(), Name = AppRoles.Admin };
-        _roleManager.FindByNameAsync(AppRoles.Admin).Returns(adminRole);
-        _dbContext.UserRoles.Add(new IdentityUserRole<Guid> { RoleId = adminRole.Id, UserId = _userId });
+        // Set up single Superuser in role
+        var superuserRole = new ApplicationRole { Id = Guid.NewGuid(), Name = AppRoles.Superuser };
+        _roleManager.FindByNameAsync(AppRoles.Superuser).Returns(superuserRole);
+        _dbContext.UserRoles.Add(new IdentityUserRole<Guid> { RoleId = superuserRole.Id, UserId = _userId });
         await _dbContext.SaveChangesAsync();
 
         var result = await _sut.DeleteAccountAsync(new DeleteAccountInput("correct"));
 
         Assert.True(result.IsFailure);
-        Assert.Equal(ErrorMessages.User.LastAdminCannotDelete, result.Error);
+        Assert.Equal(ErrorMessages.User.LastSuperuserCannotDelete, result.Error);
     }
 
     [Fact]
